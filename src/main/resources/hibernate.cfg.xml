@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+    <session-factory>
+
+        <!-- Database connection -->
+        <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/construction_mis?createDatabaseIfNotExist=true</property>
+        <property name="hibernate.connection.username">root</property>
+<!--        <property name="hibernate.connection.password"></property>-->
+
+        <!-- Hibernate settings -->
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+        <property name="hibernate.show_sql">true</property>
+        <property name="hibernate.hbm2ddl.auto">update</property>
+
+        <!-- Mapping classes -->
+        <mapping class="com.example.constructionmis.models.User"/>
+        <mapping class="com.example.constructionmis.models.Project"/>
+        <mapping class="com.example.constructionmis.models.Task"/>
+        <mapping class="com.example.constructionmis.models.Delay"/>
+        <mapping class="com.example.constructionmis.models.Report"/>
+
+    </session-factory>
+</hibernate-configuration>
