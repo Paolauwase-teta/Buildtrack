@@ -12,6 +12,7 @@ public class HibernateUtil {
         try {
             return new Configuration().configure("hibernate.cfg.xml").buildSessionFactory();
         } catch (Throwable ex) {
+            ex.printStackTrace(); // This will show why it failed in your IntelliJ console
             throw new ExceptionInInitializerError(ex);
         }
     }

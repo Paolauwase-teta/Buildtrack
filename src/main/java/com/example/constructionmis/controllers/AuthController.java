@@ -49,8 +49,8 @@ public class AuthController extends HttpServlet {
             handleLogin(request, response);
         } else if ("/logout".equals(path)) {
             handleLogout(request, response);
-        } else if ("/verify".equals(path)) {
-            handleVerifyOTP(request, response);
+        } else if ("/verify-otp".equals(path)) {
+            handleOTPVerify(request, response);
         } else {
             // if endopoint is invalid
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -103,19 +103,26 @@ public class AuthController extends HttpServlet {
         User user = userService.authenticateUser(email, password);
 
         if (user != null) {
+            // New Step: Check if the user is verified before allowing the login
+            if (!user.isVerified()) {
+                response.sendRedirect(request.getContextPath() + "/verify-otp.jsp");
+                return; // Stop here so they don't get a session yet
+            }
+
             HttpSession session = request.getSession();
             session.setAttribute("user", user);
 
             String role = user.getRole();
-            // role-based redirection
-            if (user.getRole().equalsIgnoreCase("ADMIN")) {
+            // role-based redirection using the 'role' variable and matching the JSP values
+            if (role.equalsIgnoreCase("ADMIN")) {
                 response.sendRedirect(request.getContextPath() + "/secure/admin/dashboard.jsp");
-            } else if (user.getRole().equalsIgnoreCase("ENGINEER")) {
+            } else if (role.equalsIgnoreCase("ENGINEER") || role.equalsIgnoreCase("SITE_ENGINEER")) {
                 response.sendRedirect(request.getContextPath() + "/secure/engineer/dashboard.jsp");
-            } else if (user.getRole().equalsIgnoreCase("MANAGER")) {
+            } else if (role.equalsIgnoreCase("MANAGER") || role.equalsIgnoreCase("PROJECT_MANAGER")) {
                 response.sendRedirect(request.getContextPath() + "/secure/manager/dashboard.jsp");
             } else {
-                response.sendRedirect(request.getContextPath() + "/login.jsp");
+                // Default for Architect, Client, or others
+                response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
             }
         } else {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -132,7 +139,7 @@ public class AuthController extends HttpServlet {
         response.getWriter().write("Logged out successfully");
     }
 
-    private void handleVerifyOTP(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void handleOTPVerify(HttpServletRequest request, HttpServletResponse response) throws IOException {
         // Step 1: Get the current session
         HttpSession session = request.getSession();
         // Step 2: Extract the OTP code entered by the user from the form

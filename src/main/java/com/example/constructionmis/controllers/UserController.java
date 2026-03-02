@@ -13,7 +13,7 @@ import jakarta.persistence.EntityManager;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("secure/users")
+@WebServlet("/secure/users")
 public class  UserController extends HttpServlet {
         //help Method: create UserService (reused everywhere) , creating a service helper
         private UserService getUserService() {
