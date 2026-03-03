@@ -51,6 +51,8 @@ public class AuthController extends HttpServlet {
             handleLogout(request, response);
         } else if ("/verify-otp".equals(path)) {
             handleOTPVerify(request, response);
+        } else if ("/resend-otp".equals(path)) {
+            handleResendOTP(request, response);
         } else {
             // if endopoint is invalid
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -85,7 +87,7 @@ public class AuthController extends HttpServlet {
             session.setAttribute("tempUser", user);
 
             // send otp email
-            EmailUtil.sendEmail(user.getEmail(), "Account Verification OTP", "Your otp is :  " + otp);
+            EmailUtil.sendEmail(user.getEmail(), "Account Verification OTP", "Your verification code is: " + otp);
             response.sendRedirect(request.getContextPath() + "/verify-otp.jsp");
         } catch (RuntimeException e) {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
@@ -103,32 +105,42 @@ public class AuthController extends HttpServlet {
         User user = userService.authenticateUser(email, password);
 
         if (user != null) {
-            // New Step: Check if the user is verified before allowing the login
-            if (!user.isVerified()) {
-                response.sendRedirect(request.getContextPath() + "/verify-otp.jsp");
-                return; // Stop here so they don't get a session yet
-            }
-
             HttpSession session = request.getSession();
-            session.setAttribute("user", user);
 
-            String role = user.getRole();
-            // role-based redirection using the 'role' variable and matching the JSP values
-            if (role.equalsIgnoreCase("ADMIN")) {
-                response.sendRedirect(request.getContextPath() + "/secure/admin/dashboard.jsp");
-            } else if (role.equalsIgnoreCase("ENGINEER") || role.equalsIgnoreCase("SITE_ENGINEER")) {
-                response.sendRedirect(request.getContextPath() + "/secure/engineer/dashboard.jsp");
-            } else if (role.equalsIgnoreCase("MANAGER") || role.equalsIgnoreCase("PROJECT_MANAGER")) {
-                response.sendRedirect(request.getContextPath() + "/secure/manager/dashboard.jsp");
-            } else {
-                // Default for Architect, Client, or others
-                response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
+            // MFA FLOW: Always generate security code before session granting
+            String otp = OTPUtil.generateOTP();
+            session.setAttribute("otp", otp);
+            session.setAttribute("tempUser", user);
+
+            try {
+                EmailUtil.sendEmail(user.getEmail(), "Security Verification Code",
+                        "Hello " + user.getFullName() + ", your BuildTrack security code is: " + otp);
+
+                // Return verification page URL to AJAX handler
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write(request.getContextPath() + "/verify-otp.jsp");
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write("Failed to send verification code. Check email connection.");
             }
         } else {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("invalid credentials");
+            response.getWriter().write("Invalid email or password");
         }
+    }
 
+    private String getDashboardUrl(HttpServletRequest request, String role) {
+        String url = request.getContextPath();
+        if (role.equalsIgnoreCase("ADMIN")) {
+            url += "/secure/admin/dashboard.jsp";
+        } else if (role.equalsIgnoreCase("PROJECT_MANAGER")) {
+            url += "/secure/manager/dashboard.jsp";
+        } else if (role.equalsIgnoreCase("SITE_ENGINEER") || role.equalsIgnoreCase("ARCHITECT")) {
+            url += "/secure/engineer/dashboard.jsp";
+        } else {
+            url += "/dashboard.jsp";
+        }
+        return url;
     }
 
     private void handleLogout(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -136,41 +148,56 @@ public class AuthController extends HttpServlet {
         if (session != null) {
             session.invalidate();
         }
-        response.getWriter().write("Logged out successfully");
+        response.sendRedirect(request.getContextPath() + "/login.jsp");
     }
 
     private void handleOTPVerify(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        // Step 1: Get the current session
         HttpSession session = request.getSession();
-        // Step 2: Extract the OTP code entered by the user from the form
         String enteredOtp = request.getParameter("otp");
-        // Step 3: Retrieve the correct OTP that was stored in the session during
-        // registration
         String sessionOtp = (String) session.getAttribute("otp");
-        // Step 4: Retrieve the user object that we temporarily stored in the session
         User tempUser = (User) session.getAttribute("tempUser");
 
-        // Step 5: Check if the entered OTP matches the one in our session and the user
-        // exists
         if (enteredOtp != null && enteredOtp.equals(sessionOtp) && tempUser != null) {
-            // Step 6: Create or retrieve the User Service instance to update the database
             UserService userService = getUserService();
-            // Step 7: Update the user's status to 'verified = true'
-            tempUser.setVerified(true);
-            // Step 8: Save the updated user status back to the database
-            userService.updateUser(tempUser);
 
-            // Step 9: Remove the temporary OTP and user data from the session
+            if (!tempUser.isVerified()) {
+                tempUser.setVerified(true);
+                userService.updateUser(tempUser);
+            }
+
+            session.setAttribute("user", tempUser);
             session.removeAttribute("otp");
             session.removeAttribute("tempUser");
 
-            // Step 10: Redirect the user successfully to the login page
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().write(getDashboardUrl(request, tempUser.getRole()));
         } else {
-            // Step 11: If verification fails, set an unauthorized status code
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            // Step 12: Inform the user that the code was incorrect
-            response.getWriter().write("Invalid OTP codes. Try again.");
+            response.getWriter().write("Invalid code. Try again.");
+        }
+    }
+
+    private void handleResendOTP(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession();
+        User tempUser = (User) session.getAttribute("tempUser");
+
+        if (tempUser != null) {
+            // ALWAYS generate a NEW code for security (Prevents reuse if intercepted)
+            String newOtp = OTPUtil.generateOTP();
+            session.setAttribute("otp", newOtp);
+
+            try {
+                EmailUtil.sendEmail(tempUser.getEmail(), "New Verification Code",
+                        "Your new activation code is: " + newOtp);
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write("New code sent!");
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write("Failed to resend code.");
+            }
+        } else {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("Session expired. Please try logging in again.");
         }
     }
 }

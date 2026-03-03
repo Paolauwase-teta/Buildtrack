@@ -99,8 +99,10 @@
                     });
 
                     if (response.ok) {
-                        // SUCCESS: Proceed to verification
-                        window.location.href = "${pageContext.request.contextPath}/verify-otp.jsp";
+                        showToast("Registration successful! Redirecting to verification...", "success");
+                        setTimeout(() => {
+                            window.location.href = "${pageContext.request.contextPath}/verify-otp.jsp";
+                        }, 1500);
                     } else {
                         // FAILURE: Show Toast instead of blank page
                         const errorText = await response.text();

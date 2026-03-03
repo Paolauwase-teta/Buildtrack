@@ -36,19 +36,6 @@ public class UserService {
         String hashedPassword = BCrypt.hashpw(plainPassword, BCrypt.gensalt());
         user.setPassword(hashedPassword);
         userDAO.saveUser(user);
-
-        // Send a welcome email (Step by Step Debugging: Testing if EmailUtil works)
-        try {
-            com.example.constructionmis.util.EmailUtil.sendEmail(
-                    user.getEmail(),
-                    "Welcome to Construction MIS",
-                    "Hello " + user.getFullName() + ",\n\nYour account has been successfully registered as a "
-                            + user.getRole() + ".");
-        } catch (Exception e) {
-            // We catch it here so that the registration itself doesn't fail if the email
-            // server is down
-            System.err.println("Failed to send welcome email: " + e.getMessage());
-        }
     }
 
     public User getUserById(int id) {

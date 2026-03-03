@@ -59,8 +59,11 @@
             .nav-links a {
                 text-decoration: none;
                 color: var(--gray);
-                font-size: 0.9rem;
-                font-weight: 500;
+                font-size: 0.8rem;
+                /* Slightly smaller for all-caps aesthetic */
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
                 transition: color 0.2s;
             }
 

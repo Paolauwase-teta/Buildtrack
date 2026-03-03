@@ -88,15 +88,12 @@
                         body: formData.toString()
                     });
 
-                    if (response.status === 200) {
-                        // SUCCESS: Follow the redirection to the dashboard
-                        const finalUrl = response.url;
-                        if (finalUrl.includes("login.jsp")) {
-                            // If server redirects back to login (security fail), show error
-                            showToast("Authentication Failed. Check Status.", "error");
-                        } else {
-                            window.location.href = finalUrl;
-                        }
+                    if (response.ok) {
+                        const redirectUrl = await response.text();
+                        showToast("Credentials verified. Sending OTP...", "success");
+                        setTimeout(() => {
+                            window.location.href = redirectUrl;
+                        }, 1200);
                     } else {
                         // FAILURE: Capture the raw text from response.getWriter().write()
                         const errorMsg = await response.text();

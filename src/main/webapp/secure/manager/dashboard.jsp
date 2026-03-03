@@ -1,18 +1,16 @@
 <%@ page import="com.example.constructionmis.models.*" %>
     <%@ page import="java.util.List" %>
         <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-            <% User user=(User) session.getAttribute("user"); if(user==null) {
-                response.sendRedirect(request.getContextPath() + "/login.jsp" ); return; } Integer
-                activeProjects=(request.getAttribute("activeProjects") !=null) ? (Integer)
-                request.getAttribute("activeProjects") : 0; Integer pendingTasks=(request.getAttribute("pendingTasks")
-                !=null) ? (Integer) request.getAttribute("pendingTasks") : 0; %>
+            <% User user=(User) session.getAttribute("user"); if(user==null ||
+                !user.getRole().equalsIgnoreCase("PROJECT_MANAGER")) { response.sendRedirect(request.getContextPath()
+                + "/login.jsp" ); return; } %>
                 <!DOCTYPE html>
                 <html lang="en">
 
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Dashboard | BuildTrack</title>
+                    <title>Manager Dashboard | BuildTrack</title>
                     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
                         rel="stylesheet">
                     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/dashboard-premium.css">
@@ -24,14 +22,15 @@
                         <div class="brand-logo">BuildTrack</div>
                         <div
                             style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; border: 1px solid black; padding: 4px; display: inline-block; margin-bottom: 25px;">
-                            <%= user.getRole() %> Console
-                        </div>
+                            Manager Console</div>
                         <ul class="nav-menu">
                             <li class="nav-item"><a href="#" class="nav-link active">Dashboard</a></li>
                             <li class="nav-item"><a href="${pageContext.request.contextPath}/ProjectController"
-                                    class="nav-link">Access Projects</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link">My Profile</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link">Feedback</a></li>
+                                    class="nav-link">My Projects</a></li>
+                            <li class="nav-item"><a href="${pageContext.request.contextPath}/ReportController"
+                                    class="nav-link">Reports Center</a></li>
+                            <li class="nav-item"><a href="#" class="nav-link">Team Management</a></li>
+                            <li class="nav-item"><a href="#" class="nav-link">Budget Tracking</a></li>
                         </ul>
                         <div style="margin-top: auto;">
                             <a href="${pageContext.request.contextPath}/auth/logout" class="nav-link"
@@ -43,65 +42,75 @@
                         <header>
                             <div>
                                 <h2>Hello, <%= user.getFullName().split(" ")[0] %></h2>
-                <p>Track your construction project progress here.</p>
+                <p>Welcome to your project management suite.</p>
             </div>
-            <a href=" ${pageContext.request.contextPath}/ProjectController" class="btn-primary">View All Projects</a>
+            <div style=" display: flex; gap: 10px;">
+                                        <a href="${pageContext.request.contextPath}/ReportController"
+                                            class="btn-primary"
+                                            style="background: white; color: black; border: 2px solid black;">Generate
+                                            Report</a>
+                                        <a href="${pageContext.request.contextPath}/ProjectController?action=new"
+                                            class="btn-primary">+ New Project</a>
+                            </div>
                         </header>
 
                         <div class="stats-grid">
                             <div class="stat-card">
                                 <div>
-                                    <div class="stat-value">
-                                        <%= activeProjects %>
-                                    </div>
-                                    <div class="stat-label">Total Projects</div>
+                                    <div class="stat-value">08</div>
+                                    <div class="stat-label">Active Projects</div>
                                 </div>
                             </div>
                             <div class="stat-card">
                                 <div>
-                                    <div class="stat-value">
-                                        <%= pendingTasks %>
-                                    </div>
-                                    <div class="stat-label">All Tasks</div>
+                                    <div class="stat-value">24</div>
+                                    <div class="stat-label">Pending Tasks</div>
                                 </div>
                             </div>
                             <div class="stat-card">
                                 <div>
-                                    <div class="stat-value">-</div>
-                                    <div class="stat-label">Status</div>
+                                    <div class="stat-value">12</div>
+                                    <div class="stat-label">Team Members</div>
                                 </div>
                             </div>
                             <div class="stat-card">
                                 <div>
-                                    <div class="stat-value">100%</div>
-                                    <div class="stat-label">Verification</div>
+                                    <div class="stat-value">05</div>
+                                    <div class="stat-label">Critical Delays</div>
                                 </div>
                             </div>
                         </div>
 
                         <section class="section-card">
-                            <h3>Recent Project Updates</h3>
+                            <h3>Recent Project Progress</h3>
                             <div class="table-container">
                                 <table>
                                     <thead>
                                         <tr>
                                             <th>Project ID</th>
-                                            <th>Name</th>
-                                            <th>Update</th>
+                                            <th>Project Name</th>
+                                            <th>Progress</th>
+                                            <th>Lead Engineer</th>
                                             <th>Status</th>
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>#001</td>
-                                            <td>Sample Building</td>
-                                            <td>Initial Setup Complete</td>
-                                            <td><span class="status-badge status-active">Done</span></td>
+                                            <td>#PRJ-001</td>
+                                            <td>City Hub Construction</td>
+                                            <td>75%</td>
+                                            <td>John Smith</td>
+                                            <td><span class="status-badge status-active">Active</span></td>
+                                            <td><button class="btn-action">Details</button></td>
                                         </tr>
                                         <tr>
-                                            <td colspan="4"
-                                                style="text-align: center; padding: 3rem; color: var(--text-muted); letter-spacing: 1px; font-weight: 800;">
-                                                [ More Updates Coming Soon ]</td>
+                                            <td>#PRJ-004</td>
+                                            <td>Skyline Plaza Phase II</td>
+                                            <td>30%</td>
+                                            <td>Paola Uwase</td>
+                                            <td><span class="status-badge status-pending">In Review</span></td>
+                                            <td><button class="btn-action">Details</button></td>
                                         </tr>
                                     </tbody>
                                 </table>
