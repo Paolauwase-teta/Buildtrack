@@ -17,7 +17,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Outfit', system-ui, -apple-system, sans-serif;
 }
 
 body {
@@ -56,8 +56,15 @@ body {
 }
 
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .auth-header {
@@ -76,8 +83,16 @@ body {
     display: inline-block;
 }
 
-h2 { font-size: 1.5rem; font-weight: 600; color: var(--white); }
-p { color: var(--text-dim); font-size: 0.9rem; }
+h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--white);
+}
+
+p {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+}
 
 /* Form Styles */
 .form-group {
@@ -139,7 +154,9 @@ input:focus {
     font-weight: 500;
 }
 
-.auth-footer a:hover { text-decoration: underline; }
+.auth-footer a:hover {
+    text-decoration: underline;
+}
 
 /* Dashboard Layout */
 .dashboard-layout {
@@ -176,12 +193,17 @@ input:focus {
     transition: all 0.2s;
 }
 
-.nav-link:hover, .nav-link.active {
+.nav-link:hover,
+.nav-link.active {
     background: rgba(37, 99, 235, 0.1);
     color: var(--primary);
 }
 
-.nav-icon { margin-right: 10px; width: 20px; text-align: center; }
+.nav-icon {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+}
 
 .main-content {
     margin-left: 260px;
@@ -211,7 +233,10 @@ input:focus {
     margin-bottom: 0.25rem;
 }
 
-.stat-label { color: var(--text-dim); font-size: 0.875rem; }
+.stat-label {
+    color: var(--text-dim);
+    font-size: 0.875rem;
+}
 
 .stat-icon {
     width: 48px;
@@ -261,9 +286,20 @@ tr:hover td {
     font-weight: 600;
 }
 
-.status-active { background: rgba(16, 185, 129, 0.2); color: var(--success); }
-.status-pending { background: rgba(252, 211, 77, 0.2); color: var(--secondary); }
-.status-delayed { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+.status-active {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+}
+
+.status-pending {
+    background: rgba(252, 211, 77, 0.2);
+    color: var(--secondary);
+}
+
+.status-delayed {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+}
 
 /* Buttons */
 .btn-action {
@@ -277,6 +313,16 @@ tr:hover td {
     transition: opacity 0.2s;
 }
 
-.btn-edit { background: rgba(37, 99, 235, 0.2); color: var(--primary); }
-.btn-delete { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
-.btn-action:hover { opacity: 0.8; }
+.btn-edit {
+    background: rgba(37, 99, 235, 0.2);
+    color: var(--primary);
+}
+
+.btn-delete {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+}
+
+.btn-action:hover {
+    opacity: 0.8;
+}
